@@ -1,20 +1,22 @@
 import jax
 import functools
+import equinox as eqx
 
-
+@eqx.filter_jit
 def runge_kutta_integrator(dynamics, dt=0.1):
     # zero-order hold
-    def integrator(x, u, t):
+    def integrator(x, u, d, t):
         dt2 = dt / 2.0
-        k1 = dynamics(x, u, t)
-        k2 = dynamics(x + dt2 * k1, u, t + dt2)
-        k3 = dynamics(x + dt2 * k2, u, t + dt2)
-        k4 = dynamics(x + dt * k3, u, t + dt)
+        k1 = dynamics(x, u, d, t)
+        k2 = dynamics(x + dt2 * k1, u, d, t + dt2)
+        k3 = dynamics(x + dt2 * k2, u, d, t + dt2)
+        k4 = dynamics(x + dt * k3, u, d, t + dt)
         return x + (dt / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
     return integrator
 
-@functools.partial(jax.jit, static_argnames=["dynamics"])
-def linearize(dynamics, state, control, t):
-    A, B = jax.jacobian(dynamics, [0, 1])(state, control, t)
-    C = dynamics(state, control, t) - A @ state - B @ control
-    return A, B, C
+# @functools.partial(jax.jit, static_argnames=["dynamics"])
+@eqx.filter_jit
+def linearize(dynamics, state, control, disturbance, t):
+    A, B, C = jax.jacobian(dynamics, [0, 1, 2])(state, control, disturbance, t)
+    D = dynamics(state, control, disturbance, t) - A @ state - B @ control - C @ disturbance
+    return A, B, C, D
