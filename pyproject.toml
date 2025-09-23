@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dynamaxsys"
+version = "0.0.6"
+description = "dynamical systems with jax"
+authors = [
+    { name = "Karen Leung", email = "kymleung@uw.edu" }
+]
+dependencies = [
+    "jax",
+    "numpy",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["dynamaxsys"]
