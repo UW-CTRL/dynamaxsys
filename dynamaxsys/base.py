@@ -242,7 +242,7 @@ class LinearControlDisturbanceDynamics(ControlDisturbanceAffineDynamics):
         drift_matrix: jnp.ndarray,
         control_matrix: jnp.ndarray,
         disturbance_matrix: jnp.ndarray,
-        constant: Union[jnp.ndarray, None],
+        constant: Union[jnp.ndarray, None] = None,
     ) -> None:
         self.drift_matrix = drift_matrix
         self.control_matrix = control_matrix
