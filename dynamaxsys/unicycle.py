@@ -7,10 +7,10 @@ class Unicycle(ControlAffineDynamics):
     control_dim: int = 2
 
     def __init__(self):
-        def drift_dynamics(state: jnp.ndarray, time: float) -> jnp.ndarray:
+        def drift_dynamics(state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
             return jnp.array([0.0, 0.0, 0.0])
 
-        def control_jacobian(state: jnp.ndarray, time: float) -> jnp.ndarray:
+        def control_jacobian(state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
             _, _, th = state
             # v, om = control
             return jnp.array([[jnp.cos(th), 0.0], [jnp.sin(th), 0.0], [0.0, 1.0]])
@@ -25,12 +25,12 @@ class DynamicallyExtendedUnicycle(ControlAffineDynamics):
     control_dim: int = 2
 
     def __init__(self):
-        def drift_dynamics(state: jnp.ndarray, time: float) -> jnp.ndarray:
+        def drift_dynamics(state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
             x, y, th, v = state
             # v, om = control
             return jnp.array([v * jnp.cos(th), v * jnp.sin(th), 0.0, 0.0])
 
-        def control_jacobian(state, time):
+        def control_jacobian(state, time: float = 0.0) -> jnp.ndarray:
             x, y, th, v = state
             # v, om = control
             return jnp.array([[0.0, 0.0], [0.0, 0.0], [1.0, 0.0], [0.0, 1.0]])
@@ -53,12 +53,12 @@ class RelativeUnicycle(ControlDisturbanceAffineDynamics):
     #                       om2 - om1])
 
     def __init__(self):
-        def drift_dynamics(state: jnp.ndarray, time: float) -> jnp.ndarray:
+        def drift_dynamics(state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
             xrel, yrel, threl = state
             # v1, om1, v2, om2 = control
             return jnp.zeros(self.state_dim)
 
-        def control_jacobian(state: jnp.ndarray, time: float) -> jnp.ndarray:
+        def control_jacobian(state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
             xrel, yrel, threl = state
             # v1, om1 = control
             return jnp.array(
@@ -69,7 +69,7 @@ class RelativeUnicycle(ControlDisturbanceAffineDynamics):
                 ]
             )
 
-        def disturbance_jacobian(state: jnp.ndarray, time: float) -> jnp.ndarray:
+        def disturbance_jacobian(state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
             xrel, yrel, threl = state
             # v2, om2 = disturbance
             return jnp.array(
@@ -96,7 +96,7 @@ class RelativeDynamicallyExtendedUnicycle(ControlDisturbanceAffineDynamics):
     disturbance_dim: int = 2
 
     def __init__(self):
-        def drift_dynamics(state: jnp.ndarray, time: float) -> jnp.ndarray:
+        def drift_dynamics(state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
             xrel, yrel, threl, v1, v2 = state
             # om1, a1, om2, a1 = control
             return jnp.array(
@@ -109,7 +109,7 @@ class RelativeDynamicallyExtendedUnicycle(ControlDisturbanceAffineDynamics):
                 ]
             )
 
-        def control_jacobian(state: jnp.ndarray, time: float) -> jnp.ndarray:
+        def control_jacobian(state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
             xrel, yrel, threl, v1, v2 = state
             # om1, a1, om2, a1 = control
             return jnp.array(
@@ -122,7 +122,7 @@ class RelativeDynamicallyExtendedUnicycle(ControlDisturbanceAffineDynamics):
                 ]
             )
 
-        def disturbance_jacobian(state: jnp.ndarray, time: float) -> jnp.ndarray:
+        def disturbance_jacobian(state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
             xrel, yrel, threl, v1, v2 = state
             # om2, a2 = disturbance
             return jnp.array(

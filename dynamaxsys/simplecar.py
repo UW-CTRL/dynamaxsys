@@ -44,7 +44,7 @@ class DynamicallyExtendedSimpleCar(ControlAffineDynamics):
         self.wheelbase = wheelbase
         self.min_max_velocity = min_max_velocity
 
-        def drift_dynamics(state: jnp.ndarray, time: float = 0) -> jnp.ndarray:
+        def drift_dynamics(state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
             x, y, th, v = state
             v = jnp.clip(v, *self.min_max_velocity)
             # tandelta, a = control
@@ -57,7 +57,7 @@ class DynamicallyExtendedSimpleCar(ControlAffineDynamics):
                 ]
             )
 
-        def control_jacobian(state: jnp.ndarray, time: float = 0) -> jnp.ndarray:
+        def control_jacobian(state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
             # tandelta, a = control, tandelta = tan(delta)
             x, y, th, v = state
             v = jnp.clip(v, *self.min_max_velocity)
@@ -84,7 +84,7 @@ class RelativeSimpleCar(Dynamics):
             state: jnp.ndarray,
             control: jnp.ndarray,
             disturbance: jnp.ndarray,
-            time: float = 0,
+            time: float = 0.0,
         ) -> jnp.ndarray:
             xR, yR, threl = state
             v1, tandelta1 = control

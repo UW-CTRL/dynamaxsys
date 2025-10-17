@@ -207,10 +207,10 @@ class LinearControlDynamics(ControlAffineDynamics):
             assert constant.shape == (state_dim,)
             self.constant = constant
 
-        def drift_dynamics(x: jnp.ndarray, t: float) -> jnp.ndarray:
+        def drift_dynamics(x: jnp.ndarray, t: float = 0.0) -> jnp.ndarray:
             return self.drift_matrix @ x + self.constant
 
-        def control_jacobian_fn(x: jnp.ndarray, t: float) -> jnp.ndarray:
+        def control_jacobian_fn(x: jnp.ndarray, t: float = 0.0) -> jnp.ndarray:
             return self.control_matrix
 
         super().__init__(
@@ -256,13 +256,13 @@ class LinearControlDisturbanceDynamics(ControlDisturbanceAffineDynamics):
             assert constant.shape == (state_dim,)
             self.constant = constant
 
-        def drift_dynamics(x: jnp.ndarray, t: float) -> jnp.ndarray:
+        def drift_dynamics(x: jnp.ndarray, t: float = 0.0) -> jnp.ndarray:
             return self.drift_matrix @ x + self.constant
 
-        def control_jacobian_fn(x: jnp.ndarray, t: float) -> jnp.ndarray:
+        def control_jacobian_fn(x: jnp.ndarray, t: float = 0.0) -> jnp.ndarray:
             return self.control_matrix
 
-        def disturbance_jacobian_fn(x: jnp.ndarray, t: float) -> jnp.ndarray:
+        def disturbance_jacobian_fn(x: jnp.ndarray, t: float = 0.0) -> jnp.ndarray:
             return self.disturbance_matrix
 
         super().__init__(
