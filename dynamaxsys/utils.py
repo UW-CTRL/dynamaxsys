@@ -1,6 +1,7 @@
 import jax
 import functools
 import equinox as eqx
+import jax.numpy as jnp
 
 @eqx.filter_jit
 def runge_kutta_integrator(dynamics, dt=0.1):
@@ -17,6 +18,8 @@ def runge_kutta_integrator(dynamics, dt=0.1):
 # @functools.partial(jax.jit, static_argnames=["dynamics"])
 @eqx.filter_jit
 def linearize(dynamics, state, control, disturbance, t):
+    if disturbance is None:
+        disturbance = jnp.zeros((dynamics.disturbance_dim,))
     A, B, C = jax.jacobian(dynamics, [0, 1, 2])(state, control, disturbance, t)
     D = dynamics(state, control, disturbance, t) - A @ state - B @ control - C @ disturbance
     return A, B, C, D
