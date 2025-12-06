@@ -12,6 +12,7 @@ authors = [
 dependencies = [
     "jax",
     "numpy",
+    "equinox"
 ]
 
 [tool.setuptools.packages.find]
