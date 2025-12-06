@@ -30,6 +30,7 @@ class Unicycle(ControlAffineDynamics):
 class DynamicallyExtendedUnicycle(ControlAffineDynamics):
     state_dim: int = 4
     control_dim: int = 2
+    min_max_velocity: tuple
     ''' Dynamically extended unicycle model with state [x, y, theta, v] and control [a, omega]
     where x,y is the position, theta is the heading angle,
     v is the linear velocity, a is the linear acceleration, and omega is the angular velocity.
@@ -39,9 +40,11 @@ class DynamicallyExtendedUnicycle(ControlAffineDynamics):
         dtheta/dt = omega
         dv/dt = a
     '''
-    def __init__(self):
+    def __init__(self, min_max_velocity: tuple = (-jnp.inf, jnp.inf)):
+        self.min_max_velocity = min_max_velocity
         def drift_dynamics(state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
             _, _, th, v = state
+            v = jnp.clip(v, *self.min_max_velocity)
             return jnp.array([v * jnp.cos(th), v * jnp.sin(th), 0.0, 0.0])
 
         def control_jacobian(state, time: float = 0.0) -> jnp.ndarray:

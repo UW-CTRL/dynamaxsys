@@ -59,7 +59,7 @@ class DynamicallyExtendedSimpleCar(ControlAffineDynamics):
     def __init__(
         self,
         wheelbase: float,
-        min_max_velocity: tuple = (0.0, 5.0),
+        min_max_velocity: tuple = (-jnp.inf, jnp.inf),
     ) -> None:
         self.wheelbase = wheelbase
         self.min_max_velocity = min_max_velocity
@@ -138,7 +138,8 @@ class RelativeDynamicallyExtendedSimpleCar(ControlDisturbanceAffineDynamics):
     state_dim: int = 5
     control_dim: int = 2
     disturbance_dim: int = 2
-    min_max_velocity: tuple
+    min_max_velocity_ego: tuple
+    min_max_velocity_contender: tuple
     wheelbase_ego: float
     wheelbase_contender: float
     """ Relative dynamically extended simple car model with state [xR, yR, threl, v1, v2],
@@ -160,8 +161,8 @@ class RelativeDynamicallyExtendedSimpleCar(ControlDisturbanceAffineDynamics):
         self,
         wheelbase_ego: float,
         wheelbase_contender: float,
-        min_max_velocity_ego: tuple = (0.0, 5.0),
-        min_max_velocity_contender: tuple = (0.0, 5.0),
+        min_max_velocity_ego: tuple = (-jnp.inf, jnp.inf),
+        min_max_velocity_contender: tuple = (-jnp.inf, jnp.inf),
     ):
         self.wheelbase_ego = wheelbase_ego
         self.wheelbase_contender = wheelbase_contender
