@@ -95,7 +95,8 @@ class RelativeSimpleCar(Dynamics):
     state_dim: int = 3
     control_dim: int = 2
     disturbance_dim: int = 2
-    wheelbase: float
+    wheelbase_ego: float
+    wheelbase_contender: float
     """ Relative simple car model with state [xR, yR, threl] and control [v1, tandelta1] and disturbance [v2, tandelta2]
     where xR, yR is the position of the contender relative to the ego car,
     threl is the heading of the contender relative to the ego car,
@@ -107,8 +108,9 @@ class RelativeSimpleCar(Dynamics):
         dthrel/dt = v2 / L * tandelta2 - v1 / L * tandelta1
     where L is the wheelbase of the car."""
 
-    def __init__(self, wheelbase: float) -> None:
-        self.wheelbase = wheelbase
+    def __init__(self, wheelbase_ego: float, wheelbase_contender: float) -> None:
+        self.wheelbase_ego = wheelbase_ego
+        self.wheelbase_contender = wheelbase_contender
 
         def dynamics_func(
             state: jnp.ndarray,
@@ -121,9 +123,9 @@ class RelativeSimpleCar(Dynamics):
             v2, tandelta2 = disturbance
             return jnp.array(
                 [
-                    v2 * jnp.cos(threl) - v1 + yR * v1 / self.wheelbase * tandelta1,
-                    v2 * jnp.sin(threl) - xR * v1 / self.wheelbase * tandelta1,
-                    v2 / self.wheelbase * tandelta2 - v1 / self.wheelbase * tandelta1,
+                    v2 * jnp.cos(threl) - v1 + yR * v1 / self.wheelbase_ego * tandelta1,
+                    v2 * jnp.sin(threl) - xR * v1 / self.wheelbase_ego * tandelta1,
+                    v2 / self.wheelbase_contender * tandelta2 - v1 / self.wheelbase_ego * tandelta1,
                 ]
             )
 
@@ -158,19 +160,19 @@ class RelativeDynamicallyExtendedSimpleCar(ControlDisturbanceAffineDynamics):
         self,
         wheelbase_ego: float,
         wheelbase_contender: float,
-        min_max_velocity1: tuple = (0.0, 5.0),
-        min_max_velocity2: tuple = (0.0, 5.0),
+        min_max_velocity_ego: tuple = (0.0, 5.0),
+        min_max_velocity_contender: tuple = (0.0, 5.0),
     ):
         self.wheelbase_ego = wheelbase_ego
         self.wheelbase_contender = wheelbase_contender
-        self.min_max_velocity1 = min_max_velocity1
-        self.min_max_velocity2 = min_max_velocity2
+        self.min_max_velocity_ego = min_max_velocity_ego
+        self.min_max_velocity_contender = min_max_velocity_contender
 
         def drift_dynamics(state: jnp.ndarray, time: float) -> jnp.ndarray:
             xrel, yrel, threl, v1, v2 = state
             # om1, a1, om2, a1 = control
-            v1 = jnp.clip(v1, *self.min_max_velocity1)
-            v2 = jnp.clip(v2, *self.min_max_velocity2)
+            v1 = jnp.clip(v1, *self.min_max_velocity_ego)
+            v2 = jnp.clip(v2, *self.min_max_velocity_contender)
             return jnp.array(
                 [
                     v2 * jnp.cos(threl) - v1,
@@ -184,7 +186,7 @@ class RelativeDynamicallyExtendedSimpleCar(ControlDisturbanceAffineDynamics):
         def control_jacobian(state: jnp.ndarray, time: float) -> jnp.ndarray:
             xrel, yrel, threl, v1, v2 = state
             # om1, a1, om2, a1 = control
-            v1 = jnp.clip(v1, *self.min_max_velocity1)
+            v1 = jnp.clip(v1, *self.min_max_velocity_ego)
             return jnp.array(
                 [
                     [yrel * v1 / self.wheelbase_ego, 0.0],
@@ -198,7 +200,7 @@ class RelativeDynamicallyExtendedSimpleCar(ControlDisturbanceAffineDynamics):
         def disturbance_jacobian(state: jnp.ndarray, time: float) -> jnp.ndarray:
             xrel, yrel, threl, v1, v2 = state
             # om2, a2 = disturbance
-            v2 = jnp.clip(v2, *self.min_max_velocity2)
+            v2 = jnp.clip(v2, *self.min_max_velocity_contender)
             return jnp.array(
                 [
                     [0.0, 0.0],
