@@ -1,9 +1,11 @@
 import jax.numpy as jnp
-from dynamaxsys.base import ControlAffineDynamics, LTIDynamics
+from dynamaxsys.base import (
+    LinearControlDynamics,
+    LinearControlDisturbanceDynamics,
+)
 
 
-
-class IntegratorND(LTIDynamics):
+class IntegratorND(LinearControlDynamics):
     integrator_dim: int
     N_dim: int
 
@@ -15,7 +17,7 @@ class IntegratorND(LTIDynamics):
 
         A = jnp.eye(state_dim, k=self.N_dim)
         B = jnp.zeros([state_dim, control_dim])
-        B = B.at[-self.N_dim:].set(jnp.eye(self.N_dim))
+        B = B.at[-self.N_dim :].set(jnp.eye(self.N_dim))
 
         super().__init__(A, B)
 
@@ -23,19 +25,20 @@ class IntegratorND(LTIDynamics):
 def DoubleIntegrator2D():
     return IntegratorND(2, 2)
 
+
 def DoubleIntegrator1D():
     return IntegratorND(2, 1)
 
+
 def SingleIntegrator2D():
     return IntegratorND(1, 2)
+
 
 def SingleIntegrator1D():
     return IntegratorND(1, 1)
 
 
-
-
-class TwoPlayerRelativeIntegratorND(ControlAffineDynamics):
+class TwoPlayerRelativeIntegratorND(LinearControlDisturbanceDynamics):
     integrator_dim: int
     N_dim: int
 
@@ -47,7 +50,5 @@ class TwoPlayerRelativeIntegratorND(ControlAffineDynamics):
 
         A = jnp.eye(state_dim, k=self.N_dim)
         B = jnp.zeros([state_dim, self.N_dim])
-        B = B.at[-self.N_dim:].set(jnp.eye(self.N_dim))
-        B2 = jnp.concatenate([-B, B], axis=-1)
-
-        super().__init__(A, B2)
+        B = B.at[-self.N_dim :].set(jnp.eye(self.N_dim))
+        super().__init__(A, -B, B)
