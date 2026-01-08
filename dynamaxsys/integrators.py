@@ -38,7 +38,7 @@ def SingleIntegrator1D():
     return IntegratorND(1, 1)
 
 
-class TwoPlayerRelativeIntegratorND(LinearControlDisturbanceDynamics):
+class TwoPlayerRelativeIntegratorND(LinearControlDynamics):
     integrator_dim: int
     N_dim: int
 
@@ -50,5 +50,7 @@ class TwoPlayerRelativeIntegratorND(LinearControlDisturbanceDynamics):
 
         A = jnp.eye(state_dim, k=self.N_dim)
         B = jnp.zeros([state_dim, self.N_dim])
-        B = B.at[-self.N_dim :].set(jnp.eye(self.N_dim))
-        super().__init__(A, -B, B)
+        B = B.at[-self.N_dim:].set(jnp.eye(self.N_dim))
+        B2 = jnp.concatenate([-B, B], axis=-1)
+
+        super().__init__(A, B2)

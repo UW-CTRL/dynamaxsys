@@ -169,7 +169,8 @@ class ControlDisturbanceAffineDynamics(Dynamics):
 
         super().__init__(dynamics_func, state_dim, control_dim, disturbance_dim)
 
-    def open_loop_dynamics(self, state, time):
+    @eqx.filter_jit
+    def open_loop_dynamics(self, state: jnp.ndarray, time: float = 0.0) -> jnp.ndarray:
         return self.drift_dynamics(state, time)
 
 
