@@ -7,17 +7,18 @@ import equinox as eqx
 class Dynamics(eqx.Module):
     """
     Base class for continuous-time system dynamics.
-    
+
     Attributes:
         dynamics_func: Callable implementing the system dynamics.
         state_dim: Dimension of the state vector.
         control_dim: Dimension of the control input.
         disturbance_dim: Dimension of the disturbance input (default 0).
-    
+
     Methods:
         linearize: Linearizes the system around a given state, control, and disturbance.
         __call__: Evaluates the system dynamics.
     """
+
     dynamics_func: Callable
     state_dim: int
     control_dim: int
@@ -25,7 +26,9 @@ class Dynamics(eqx.Module):
 
     def __init__(
         self,
-        dynamics_func: Callable[[jnp.ndarray, jnp.ndarray, jnp.ndarray, float], jnp.ndarray],
+        dynamics_func: Callable[
+            [jnp.ndarray, jnp.ndarray, jnp.ndarray, float], jnp.ndarray
+        ],
         state_dim: int,
         control_dim: int,
         disturbance_dim: int = 0,
@@ -75,17 +78,18 @@ class Dynamics(eqx.Module):
 class ControlAffineDynamics(Dynamics):
     """
     Dynamics for control-affine systems: \dot{x} = f(x, t) + G(x, t)u
-    
+
     Attributes:
         drift_dynamics: Function for the drift term f(x, t).
         control_jacobian: Function for the control Jacobian G(x, t).
         state_dim: State dimension.
         control_dim: Control input dimension.
         disturbance_dim: Disturbance dimension (default 0).
-    
+
     Methods:
         open_loop_dynamics: Returns the drift dynamics for a given state and time.
     """
+
     drift_dynamics: Callable[[jnp.ndarray, float], jnp.ndarray]
     control_jacobian: Callable[[jnp.ndarray, float], jnp.ndarray]
     state_dim: int
@@ -123,7 +127,7 @@ class ControlDisturbanceAffineDynamics(Dynamics):
     """
     Dynamics for control- and disturbance-affine systems:
         \dot{x} = f(x, t) + G(x, t)u + H(x, t)d
-    
+
     Attributes:
         drift_dynamics: Function for the drift term f(x, t).
         control_jacobian: Function for the control Jacobian G(x, t).
@@ -131,10 +135,11 @@ class ControlDisturbanceAffineDynamics(Dynamics):
         state_dim: State dimension.
         control_dim: Control input dimension.
         disturbance_dim: Disturbance input dimension.
-    
+
     Methods:
         open_loop_dynamics: Returns the drift dynamics for a given state and time.
     """
+
     drift_dynamics: Callable[[jnp.ndarray, float], jnp.ndarray]
     control_jacobian: Callable[[jnp.ndarray, float], jnp.ndarray]
     disturbance_jacobian: Callable[[jnp.ndarray, float], jnp.ndarray]
@@ -177,13 +182,14 @@ class LinearControlDynamics(ControlAffineDynamics):
     """
     Linear time-invariant control system:
         \dot{x} = A x + B u + c
-    
+
     Attributes:
         drift_matrix: The A matrix.
         control_matrix: The B matrix.
         constant: The c vector (default zero).
         disturbance_dim: Disturbance dimension (default 0).
     """
+
     drift_matrix: Union[jnp.ndarray]
     control_matrix: jnp.ndarray
     constant: Union[jnp.ndarray, None] = None
@@ -225,13 +231,14 @@ class LinearControlDisturbanceDynamics(ControlDisturbanceAffineDynamics):
     """
     Linear time-invariant control-disturbance system:
         \dot{x} = A x + B u + G d + c
-    
+
     Attributes:
         drift_matrix: The A matrix.
         control_matrix: The B matrix.
         disturbance_matrix: The G matrix.
         constant: The c vector (default zero).
     """
+
     drift_matrix: jnp.ndarray
     control_matrix: jnp.ndarray
     disturbance_matrix: jnp.ndarray
@@ -281,9 +288,9 @@ def get_discrete_time_dynamics(
     # Ensure the continuous_time_dynamics is an instance of Dynamics
     if not isinstance(continuous_time_dynamics, Dynamics):
         raise TypeError("continuous_time_dynamics must be an instance of Dynamics.")
-    discete_dynamics: Callable[[jnp.ndarray, jnp.ndarray, Union[jnp.ndarray, None], float], jnp.ndarray] = runge_kutta_integrator(
-        continuous_time_dynamics, dt
-    )
+    discete_dynamics: Callable[
+        [jnp.ndarray, jnp.ndarray, Union[jnp.ndarray, None], float], jnp.ndarray
+    ] = runge_kutta_integrator(continuous_time_dynamics, dt)
     return Dynamics(
         discete_dynamics,
         continuous_time_dynamics.state_dim,
