@@ -24,17 +24,23 @@ from .simplecar import (
     DynamicallyExtendedSimpleCar,
     RelativeSimpleCar,
     RelativeDynamicallyExtendedSimpleCar,
-    ParametricDynamicallyExtendedSimpleCar
+    ParametricDynamicallyExtendedSimpleCar,
+    ParametricRelativeDynamicallyExtendedSimpleCar
 )
 from .unicycle import (
     Unicycle,
     DynamicallyExtendedUnicycle,
     RelativeUnicycle,
     RelativeDynamicallyExtendedUnicycle,
+    ParametricUnicycle,
+    ParametricDynamicallyExtendedUnicycle,
+    ParametricRelativeUnicycle,
+    ParametricRelativeDynamicallyExtendedUnicycle
 )
 
 from .parametric import (
-    ParametricControlAffineDynamics
+    ParametricControlAffineDynamics,
+    ParametricControlDisturbanceAffineDynamics,
 )
 
 from .utils import linearize
@@ -65,7 +71,13 @@ __all__ = [
     "RelativeDynamicallyExtendedUnicycle",
     "ParametricIntegratorND",
     "ParametricControlAffineDynamics",
+    "ParametricControlDisturbanceAffineDynamics",
     "ParametricDynamicallyExtendedSimpleCar",
+    "ParametricRelativeDynamicallyExtendedSimpleCar",
+    "ParametricUnicycle",
+    "ParametricDynamicallyExtendedUnicycle",
+    "ParametricRelativeUnicycle",
+    "ParametricRelativeDynamicallyExtendedUnicycle",
     "linearize",
 ]
 # Add any public symbols from utils.py here if you want to be explicit
