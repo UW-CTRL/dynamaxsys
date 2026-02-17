@@ -4,6 +4,8 @@ from dynamaxsys.base import (
     Dynamics,
     ControlDisturbanceAffineDynamics,
 )
+from dynamaxsys.parametric import ParametricControlAffineDynamics
+
 from typing import Union
 
 
@@ -125,7 +127,8 @@ class RelativeSimpleCar(Dynamics):
                 [
                     v2 * jnp.cos(threl) - v1 + yR * v1 / self.wheelbase_ego * tandelta1,
                     v2 * jnp.sin(threl) - xR * v1 / self.wheelbase_ego * tandelta1,
-                    v2 / self.wheelbase_contender * tandelta2 - v1 / self.wheelbase_ego * tandelta1,
+                    v2 / self.wheelbase_contender * tandelta2
+                    - v1 / self.wheelbase_ego * tandelta1,
                 ]
             )
 
@@ -219,4 +222,40 @@ class RelativeDynamicallyExtendedSimpleCar(ControlDisturbanceAffineDynamics):
             self.state_dim,
             self.control_dim,
             self.disturbance_dim,
+        )
+
+
+class ParametricDynamicallyExtendedSimpleCar(ParametricControlAffineDynamics):
+    state_dim: int
+    control_dim: int
+    wheelbase: float
+    min_max_velocity: tuple
+    """ Dynamically extended simple car model with state [x, y, theta, v] and control [tandelta, a]
+    where x,y is the position, theta is the heading angle,
+    v is the linear velocity, tandelta is the tangent of the steering angle,
+    and a is the linear acceleration.
+    The dynamics are given by:
+        dx/dt = v * cos(theta)
+        dy/dt = v * sin(theta)
+        dtheta/dt = v / L * tandelta
+        dv/dt = a
+    where L is the wheelbase of the car.
+    """
+
+    def __init__(
+        self,
+        wheelbase: float,
+        min_max_velocity: tuple = (-jnp.inf, jnp.inf),
+    ) -> None:
+        self.wheelbase = wheelbase
+        self.min_max_velocity = min_max_velocity
+        sys = DynamicallyExtendedSimpleCar(
+            wheelbase=wheelbase, min_max_velocity=min_max_velocity
+        )
+
+        super().__init__(
+            drift_dynamics=sys.drift_dynamics,
+            control_jacobian=sys.control_jacobian,
+            state_dim=sys.state_dim,
+            control_dim=sys.control_dim,
         )
