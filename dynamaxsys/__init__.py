@@ -1,4 +1,9 @@
-__version__ = "0.1.0"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("dynamaxsys")
+except PackageNotFoundError:
+    __version__ = "unknown"
 
 from .base import (
     Dynamics,
@@ -17,7 +22,7 @@ from .integrators import (
     SingleIntegrator2D,
     SingleIntegrator1D,
     TwoPlayerRelativeIntegratorND,
-    ParametricIntegratorND
+    ParametricIntegratorND,
 )
 from .simplecar import (
     SimpleCar,
@@ -25,7 +30,7 @@ from .simplecar import (
     RelativeSimpleCar,
     RelativeDynamicallyExtendedSimpleCar,
     ParametricDynamicallyExtendedSimpleCar,
-    ParametricRelativeDynamicallyExtendedSimpleCar
+    ParametricRelativeDynamicallyExtendedSimpleCar,
 )
 from .unicycle import (
     Unicycle,
@@ -35,7 +40,7 @@ from .unicycle import (
     ParametricUnicycle,
     ParametricDynamicallyExtendedUnicycle,
     ParametricRelativeUnicycle,
-    ParametricRelativeDynamicallyExtendedUnicycle
+    ParametricRelativeDynamicallyExtendedUnicycle,
 )
 
 from .parametric import (

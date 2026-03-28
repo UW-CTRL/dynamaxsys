@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0", "wheel", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "dynamaxsys"
-version = "0.0.7"
+dynamic = ["version"]
 description = "dynamical systems with jax"
 authors = [
     { name = "Karen Leung", email = "kymleung@uw.edu" }
@@ -18,3 +18,5 @@ dependencies = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["dynamaxsys"]
+
+[tool.setuptools_scm]
