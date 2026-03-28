@@ -17,21 +17,34 @@ from .integrators import (
     SingleIntegrator2D,
     SingleIntegrator1D,
     TwoPlayerRelativeIntegratorND,
+    ParametricIntegratorND
 )
 from .simplecar import (
     SimpleCar,
     DynamicallyExtendedSimpleCar,
     RelativeSimpleCar,
     RelativeDynamicallyExtendedSimpleCar,
+    ParametricDynamicallyExtendedSimpleCar,
+    ParametricRelativeDynamicallyExtendedSimpleCar
 )
 from .unicycle import (
     Unicycle,
     DynamicallyExtendedUnicycle,
     RelativeUnicycle,
     RelativeDynamicallyExtendedUnicycle,
+    ParametricUnicycle,
+    ParametricDynamicallyExtendedUnicycle,
+    ParametricRelativeUnicycle,
+    ParametricRelativeDynamicallyExtendedUnicycle
+)
+
+from .parametric import (
+    ParametricControlAffineDynamics,
+    ParametricControlDisturbanceAffineDynamics,
 )
 
 from .utils import linearize
+
 
 __all__ = [
     "Dynamics",
@@ -56,6 +69,15 @@ __all__ = [
     "DynamicallyExtendedUnicycle",
     "RelativeUnicycle",
     "RelativeDynamicallyExtendedUnicycle",
+    "ParametricIntegratorND",
+    "ParametricControlAffineDynamics",
+    "ParametricControlDisturbanceAffineDynamics",
+    "ParametricDynamicallyExtendedSimpleCar",
+    "ParametricRelativeDynamicallyExtendedSimpleCar",
+    "ParametricUnicycle",
+    "ParametricDynamicallyExtendedUnicycle",
+    "ParametricRelativeUnicycle",
+    "ParametricRelativeDynamicallyExtendedUnicycle",
     "linearize",
 ]
 # Add any public symbols from utils.py here if you want to be explicit

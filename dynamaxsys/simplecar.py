@@ -4,6 +4,8 @@ from dynamaxsys.base import (
     Dynamics,
     ControlDisturbanceAffineDynamics,
 )
+from dynamaxsys.parametric import ParametricControlAffineDynamics, ParametricControlDisturbanceAffineDynamics
+
 from typing import Union
 
 
@@ -125,7 +127,8 @@ class RelativeSimpleCar(Dynamics):
                 [
                     v2 * jnp.cos(threl) - v1 + yR * v1 / self.wheelbase_ego * tandelta1,
                     v2 * jnp.sin(threl) - xR * v1 / self.wheelbase_ego * tandelta1,
-                    v2 / self.wheelbase_contender * tandelta2 - v1 / self.wheelbase_ego * tandelta1,
+                    v2 / self.wheelbase_contender * tandelta2
+                    - v1 / self.wheelbase_ego * tandelta1,
                 ]
             )
 
@@ -219,4 +222,90 @@ class RelativeDynamicallyExtendedSimpleCar(ControlDisturbanceAffineDynamics):
             self.state_dim,
             self.control_dim,
             self.disturbance_dim,
+        )
+
+
+class ParametricDynamicallyExtendedSimpleCar(ParametricControlAffineDynamics):
+    state_dim: int
+    control_dim: int
+    wheelbase: float
+    min_max_velocity: tuple
+    """ Dynamically extended simple car model with state [x, y, theta, v] and control [tandelta, a]
+    where x,y is the position, theta is the heading angle,
+    v is the linear velocity, tandelta is the tangent of the steering angle,
+    and a is the linear acceleration.
+    The dynamics are given by:
+        dx/dt = v * cos(theta)
+        dy/dt = v * sin(theta)
+        dtheta/dt = v / L * tandelta
+        dv/dt = a
+    where L is the wheelbase of the car.
+    """
+
+    def __init__(
+        self,
+        wheelbase: float,
+        min_max_velocity: tuple = (-jnp.inf, jnp.inf),
+    ) -> None:
+        self.wheelbase = wheelbase
+        self.min_max_velocity = min_max_velocity
+        sys = DynamicallyExtendedSimpleCar(
+            wheelbase=wheelbase, min_max_velocity=min_max_velocity
+        )
+
+        super().__init__(
+            drift_dynamics=sys.drift_dynamics,
+            control_jacobian=sys.control_jacobian,
+            state_dim=sys.state_dim,
+            control_dim=sys.control_dim,
+        )
+
+class ParametricRelativeDynamicallyExtendedSimpleCar(ParametricControlDisturbanceAffineDynamics):
+    state_dim: int
+    control_dim: int
+    disturbance_dim: int
+    min_max_velocity_ego: tuple
+    min_max_velocity_contender: tuple
+    wheelbase_ego: float
+    wheelbase_contender: float
+    """ Parametric relative dynamically extended simple car model with state [xR, yR, threl, v1, v2, alpha, beta] and control [tandelta1, a1] and disturbance [tandelta2, a2]
+    where xR, yR is the position of the contender relative to the ego car,
+    threl is the heading of the contender relative to the ego car,
+    v1, a1 are the linear velocity and acceleration of the ego car,
+    and v2, a2 are the linear velocity and acceleration of the contender car.
+    alpha and beta are the parameters that scale the control inputs of the ego and contender cars, respectively.
+    The dynamics are given by:
+        dxR/dt = v2 * cos(threl) - v1 + yR * v1 / L1 * alpha_d * tandelta1
+        dyR/dt = v2 * sin(threl) - xR * v1 / L1 * alpha_d * tandelta1
+        dthrel/dt = v2 / L2 * beta_d * tandelta2 - v1 / L1 * alpha_d * tandelta1
+        dv1/dt = alpha_a a1
+        dv2/dt = beta_a a2
+    where L1 is the wheelbase of the ego car and L2 is the wheelbase of the contender car.
+    """
+
+    def __init__(
+        self,
+        wheelbase_ego: float,
+        wheelbase_contender: float,
+        min_max_velocity_ego: tuple = (-jnp.inf, jnp.inf),
+        min_max_velocity_contender: tuple = (-jnp.inf, jnp.inf),
+    ) -> None:
+        self.wheelbase_ego = wheelbase_ego
+        self.wheelbase_contender = wheelbase_contender
+        self.min_max_velocity_ego = min_max_velocity_ego
+        self.min_max_velocity_contender = min_max_velocity_contender
+        sys = RelativeDynamicallyExtendedSimpleCar(
+            wheelbase_ego=wheelbase_ego,
+            wheelbase_contender=wheelbase_contender,
+            min_max_velocity_ego=min_max_velocity_ego,
+            min_max_velocity_contender=min_max_velocity_contender,
+        )
+
+        super().__init__(
+            drift_dynamics=sys.drift_dynamics,
+            control_jacobian=sys.control_jacobian,
+            disturbance_jacobian=sys.disturbance_jacobian,
+            state_dim=sys.state_dim,
+            control_dim=sys.control_dim,
+            disturbance_dim=sys.disturbance_dim,
         )

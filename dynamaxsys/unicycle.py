@@ -1,5 +1,9 @@
 import jax.numpy as jnp
 from dynamaxsys.base import ControlAffineDynamics, ControlDisturbanceAffineDynamics
+from dynamaxsys.parametric import (
+    ParametricControlAffineDynamics,
+    ParametricControlDisturbanceAffineDynamics,
+)
 
 
 class Unicycle(ControlAffineDynamics):
@@ -187,4 +191,81 @@ class RelativeDynamicallyExtendedUnicycle(ControlDisturbanceAffineDynamics):
             self.state_dim,
             self.control_dim,
             self.disturbance_dim,
+        )
+
+
+class ParametricUnicycle(ParametricControlAffineDynamics):
+    state_dim: int
+    control_dim: int
+
+    def __init__(self):
+        sys = Unicycle()
+        super().__init__(
+            drift_dynamics=sys.drift_dynamics,
+            control_jacobian=sys.control_jacobian,
+            state_dim=sys.state_dim,
+            control_dim=sys.control_dim,
+        )
+
+
+class ParametricDynamicallyExtendedUnicycle(ParametricControlAffineDynamics):
+    state_dim: int
+    control_dim: int
+    min_max_velocity: tuple
+
+    def __init__(self, min_max_velocity: tuple = (-jnp.inf, jnp.inf)):
+        self.min_max_velocity = min_max_velocity
+        sys = DynamicallyExtendedUnicycle(min_max_velocity=min_max_velocity)
+        super().__init__(
+            drift_dynamics=sys.drift_dynamics,
+            control_jacobian=sys.control_jacobian,
+            state_dim=sys.state_dim,
+            control_dim=sys.control_dim,
+        )
+
+
+class ParametricRelativeUnicycle(ParametricControlDisturbanceAffineDynamics):
+    state_dim: int
+    control_dim: int
+    disturbance_dim: int
+
+    def __init__(self):
+        sys = RelativeUnicycle()
+        super().__init__(
+            drift_dynamics=sys.drift_dynamics,
+            control_jacobian=sys.control_jacobian,
+            disturbance_jacobian=sys.disturbance_jacobian,
+            state_dim=sys.state_dim,
+            control_dim=sys.control_dim,
+            disturbance_dim=sys.disturbance_dim,
+        )
+
+
+class ParametricRelativeDynamicallyExtendedUnicycle(
+    ParametricControlDisturbanceAffineDynamics
+):
+    state_dim: int
+    control_dim: int
+    disturbance_dim: int
+    min_max_velocity_ego: tuple
+    min_max_velocity_contender: tuple
+
+    def __init__(
+        self,
+        min_max_velocity_ego: tuple = (-jnp.inf, jnp.inf),
+        min_max_velocity_contender: tuple = (-jnp.inf, jnp.inf),
+    ):
+        self.min_max_velocity_ego = min_max_velocity_ego
+        self.min_max_velocity_contender = min_max_velocity_contender
+        sys = RelativeDynamicallyExtendedUnicycle(
+            min_max_velocity_ego=min_max_velocity_ego,
+            min_max_velocity_contender=min_max_velocity_contender,
+        )
+        super().__init__(
+            drift_dynamics=sys.drift_dynamics,
+            control_jacobian=sys.control_jacobian,
+            disturbance_jacobian=sys.disturbance_jacobian,
+            state_dim=sys.state_dim,
+            control_dim=sys.control_dim,
+            disturbance_dim=sys.disturbance_dim,
         )
