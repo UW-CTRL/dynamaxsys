@@ -1,7 +1,9 @@
-from dynamaxsys.utils import runge_kutta_integrator, linearize
 from typing import Callable, Union
-import jax.numpy as jnp
+
 import equinox as eqx
+import jax.numpy as jnp
+
+from dynamaxsys.utils import linearize, runge_kutta_integrator
 
 
 class Dynamics(eqx.Module):
@@ -62,8 +64,18 @@ class Dynamics(eqx.Module):
         """
         if disturbance0 is None:
             disturbance0 = jnp.zeros((self.disturbance_dim,))
-        A, B, C, D = linearize(self.dynamics_func, state0, control0, disturbance0, time)
+        A, B, C, D = linearize(self, state0, control0, disturbance0, time)
         return A @ state0 + B @ control0 + C @ disturbance0 + D
+
+    def project_state(self, state: jnp.ndarray) -> jnp.ndarray:
+        """Project a state onto the system's feasible state set."""
+        return state
+
+    def project_derivative(
+        self, state: jnp.ndarray, derivative: jnp.ndarray
+    ) -> jnp.ndarray:
+        """Project a derivative onto the feasible directions at a state."""
+        return derivative
 
     def __call__(
         self,
@@ -72,7 +84,8 @@ class Dynamics(eqx.Module):
         disturbance: Union[jnp.ndarray, None] = None,
         time: float = 0.0,
     ) -> jnp.ndarray:
-        return self.dynamics_func(state, control, disturbance, time)
+        derivative = self.dynamics_func(state, control, disturbance, time)
+        return self.project_derivative(state, derivative)
 
 
 class ControlAffineDynamics(Dynamics):

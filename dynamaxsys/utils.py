@@ -7,12 +7,14 @@ import jax.numpy as jnp
 def runge_kutta_integrator(dynamics, dt=0.1):
     # zero-order hold
     def integrator(x, u, d=None, t=0.0):
+        project_state = getattr(dynamics, "project_state", lambda state: state)
+        x = project_state(x)
         dt2 = dt / 2.0
         k1 = dynamics(x, u, d, t)
-        k2 = dynamics(x + dt2 * k1, u, d, t + dt2)
-        k3 = dynamics(x + dt2 * k2, u, d, t + dt2)
-        k4 = dynamics(x + dt * k3, u, d, t + dt)
-        return x + (dt / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+        k2 = dynamics(project_state(x + dt2 * k1), u, d, t + dt2)
+        k3 = dynamics(project_state(x + dt2 * k2), u, d, t + dt2)
+        k4 = dynamics(project_state(x + dt * k3), u, d, t + dt)
+        return project_state(x + (dt / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4))
 
     return integrator
 

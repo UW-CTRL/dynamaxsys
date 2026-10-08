@@ -1,12 +1,16 @@
+from typing import Union
+
 import jax.numpy as jnp
+
 from dynamaxsys.base import (
     ControlAffineDynamics,
-    Dynamics,
     ControlDisturbanceAffineDynamics,
+    Dynamics,
 )
-from dynamaxsys.parametric import ParametricControlAffineDynamics, ParametricControlDisturbanceAffineDynamics
-
-from typing import Union
+from dynamaxsys.parametric import (
+    ParametricControlAffineDynamics,
+    ParametricControlDisturbanceAffineDynamics,
+)
 
 
 class SimpleCar(Dynamics):
@@ -55,6 +59,8 @@ class DynamicallyExtendedSimpleCar(ControlAffineDynamics):
         dy/dt = v * sin(theta)
         dtheta/dt = v / L * tandelta
         dv/dt = a
+    The velocity state is constrained to min_max_velocity. Acceleration that
+    points out of the feasible interval is suppressed at either boundary.
     where L is the wheelbase of the car.
     """
 
@@ -91,6 +97,20 @@ class DynamicallyExtendedSimpleCar(ControlAffineDynamics):
         super().__init__(
             drift_dynamics, control_jacobian, self.state_dim, self.control_dim
         )
+
+    def project_state(self, state: jnp.ndarray) -> jnp.ndarray:
+        return state.at[3].set(jnp.clip(state[3], *self.min_max_velocity))
+
+    def project_derivative(
+        self, state: jnp.ndarray, derivative: jnp.ndarray
+    ) -> jnp.ndarray:
+        min_velocity, max_velocity = self.min_max_velocity
+        velocity = state[3]
+        acceleration = derivative[3]
+        points_outward = ((velocity <= min_velocity) & (acceleration < 0.0)) | (
+            (velocity >= max_velocity) & (acceleration > 0.0)
+        )
+        return derivative.at[3].set(jnp.where(points_outward, 0.0, acceleration))
 
 
 class RelativeSimpleCar(Dynamics):
@@ -260,7 +280,24 @@ class ParametricDynamicallyExtendedSimpleCar(ParametricControlAffineDynamics):
             control_dim=sys.control_dim,
         )
 
-class ParametricRelativeDynamicallyExtendedSimpleCar(ParametricControlDisturbanceAffineDynamics):
+    def project_state(self, state: jnp.ndarray) -> jnp.ndarray:
+        return state.at[3].set(jnp.clip(state[3], *self.min_max_velocity))
+
+    def project_derivative(
+        self, state: jnp.ndarray, derivative: jnp.ndarray
+    ) -> jnp.ndarray:
+        min_velocity, max_velocity = self.min_max_velocity
+        velocity = state[3]
+        acceleration = derivative[3]
+        points_outward = ((velocity <= min_velocity) & (acceleration < 0.0)) | (
+            (velocity >= max_velocity) & (acceleration > 0.0)
+        )
+        return derivative.at[3].set(jnp.where(points_outward, 0.0, acceleration))
+
+
+class ParametricRelativeDynamicallyExtendedSimpleCar(
+    ParametricControlDisturbanceAffineDynamics
+):
     state_dim: int
     control_dim: int
     disturbance_dim: int

@@ -327,6 +327,39 @@ def test_continuous_time_dynamic_simplecar():
     print("Passed: Dynamically Extended Simple Car")
 
 
+def test_dynamic_simplecar_velocity_limits():
+    ct_dynamics = DynamicallyExtendedSimpleCar(
+        wheelbase=1.0, min_max_velocity=(-1.0, 1.0)
+    )
+    state = jnp.zeros((ct_dynamics.state_dim,))
+
+    upper_state = state.at[3].set(1.0)
+    assert jnp.isclose(ct_dynamics(upper_state, jnp.array([0.0, 2.0]))[3], 0.0)
+    assert jnp.isclose(ct_dynamics(upper_state, jnp.array([0.0, -2.0]))[3], -2.0)
+
+    lower_state = state.at[3].set(-1.0)
+    assert jnp.isclose(ct_dynamics(lower_state, jnp.array([0.0, -2.0]))[3], 0.0)
+    assert jnp.isclose(ct_dynamics(lower_state, jnp.array([0.0, 2.0]))[3], 2.0)
+
+    discrete_dynamics = get_discrete_time_dynamics(ct_dynamics, dt=0.1)
+    next_state = discrete_dynamics(
+        state.at[3].set(0.9), jnp.array([0.0, 10.0])
+    )
+    assert jnp.isclose(next_state[3], 1.0)
+
+    next_state = discrete_dynamics(
+        state.at[3].set(-0.9), jnp.array([0.0, -10.0])
+    )
+    assert jnp.isclose(next_state[3], -1.0)
+
+    next_state = discrete_dynamics(
+        state.at[3].set(1.5), jnp.array([0.0, 10.0])
+    )
+    assert jnp.isclose(next_state[3], 1.0)
+
+    print("Passed: Dynamically Extended Simple Car Velocity Limits")
+
+
 if __name__ == "__main__":
     test_dynamics()
     test_AffineDynamics(with_disturbance=True)
@@ -339,3 +372,4 @@ if __name__ == "__main__":
 
     test_continuous_time_simplecar()
     test_continuous_time_dynamic_simplecar()
+    test_dynamic_simplecar_velocity_limits()
